@@ -1,0 +1,17 @@
+#!/bin/sh
+# Managed by Ansible - motd-needrestart
+# Counts pending package updates from the current apt cache (no "apt update").
+export LC_ALL=C
+tmp="{{ motd_updates_cache_file }}.tmp"
+list=$(apt-get -s dist-upgrade 2>/dev/null | grep '^Inst')
+total=$(printf '%s\n' "$list" | grep -c '^Inst')
+security=$(printf '%s\n' "$list" | grep -c -i -e '-security')
+{
+  if [ "$total" -gt 0 ]; then
+    echo "$total package updates can be applied ($security security)."
+{% if motd_updates_list_max | int > 0 %}
+    printf '%s\n' "$list" | awk '{print "  " $2}' | head -n {{ motd_updates_list_max | int }}
+{% endif %}
+  fi
+} > "$tmp"
+mv "$tmp" "{{ motd_updates_cache_file }}"

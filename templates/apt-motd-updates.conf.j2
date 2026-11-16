@@ -1,0 +1,4 @@
+// Managed by Ansible - motd-needrestart
+// Refresh the MOTD update counter after apt update / dpkg runs.
+APT::Update::Post-Invoke-Success { "{{ motd_updates_cache_script }} >/dev/null 2>&1 || true"; };
+DPkg::Post-Invoke { "{{ motd_updates_cache_script }} >/dev/null 2>&1 || true"; };

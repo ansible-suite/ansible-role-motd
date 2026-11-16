@@ -12,3 +12,11 @@ motd_banner_font: small
 
 # End of support (EOL/LTS/ELTS) information for the installed Debian release
 motd_eol_enabled: true
+
+# Pending package updates in the MOTD (counted from the existing apt cache)
+motd_updates_enabled: true
+motd_updates_cache_file: /var/cache/updates.motd
+motd_updates_cache_script: /usr/local/sbin/updates-cache
+motd_updates_cron_minute: "*/30"
+# How many package names to list below the summary (0 = summary only)
+motd_updates_list_max: 0

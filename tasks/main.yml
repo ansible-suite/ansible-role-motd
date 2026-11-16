@@ -1,4 +1,15 @@
 ---
+- name: Skip MOTD on non-Debian systems
+  ansible.builtin.debug:
+    msg: >-
+      Skipping ansible-suite.motd on {{ ansible_facts['distribution'] }}
+      (os_family {{ ansible_facts['os_family'] }}); only Debian family is supported.
+  when: ansible_facts['os_family'] != 'Debian'
+
+- name: End play for host when not Debian family
+  ansible.builtin.meta: end_host
+  when: ansible_facts['os_family'] != 'Debian'
+
 - name: Install needrestart
   ansible.builtin.apt:
     name: needrestart
@@ -91,6 +102,74 @@
   ansible.builtin.command: "{{ motd_needrestart_cache_script }}"
   args:
     creates: "{{ motd_needrestart_cache_file }}"
+
+# ------------------------------
+# Pending package updates
+# ------------------------------
+
+- name: Deploy updates cache script
+  ansible.builtin.template:
+    src: updates-cache.sh.j2
+    dest: "{{ motd_updates_cache_script }}"
+    owner: root
+    group: root
+    mode: "0755"
+  notify: Refresh updates cache
+  when: motd_updates_enabled | bool
+
+- name: Deploy MOTD updates script
+  ansible.builtin.template:
+    src: 98-updates.j2
+    dest: /etc/update-motd.d/98-updates
+    owner: root
+    group: root
+    mode: "0755"
+  when: motd_updates_enabled | bool
+
+- name: Deploy apt hook refreshing the updates cache
+  ansible.builtin.template:
+    src: apt-motd-updates.conf.j2
+    dest: /etc/apt/apt.conf.d/99motd-updates
+    owner: root
+    group: root
+    mode: "0644"
+  when: motd_updates_enabled | bool
+
+- name: Schedule periodic updates cache refresh
+  ansible.builtin.cron:
+    name: updates motd cache
+    cron_file: updates-motd
+    user: root
+    minute: "{{ motd_updates_cron_minute }}"
+    job: "{{ motd_updates_cache_script }}"
+  when: motd_updates_enabled | bool
+
+- name: Schedule updates cache refresh at boot
+  ansible.builtin.cron:
+    name: updates motd cache at boot
+    cron_file: updates-motd
+    user: root
+    special_time: reboot
+    job: "{{ motd_updates_cache_script }}"
+  when: motd_updates_enabled | bool
+
+- name: Create updates cache if missing
+  ansible.builtin.command: "{{ motd_updates_cache_script }}"
+  args:
+    creates: "{{ motd_updates_cache_file }}"
+  when: motd_updates_enabled | bool
+
+- name: Remove updates MOTD files when disabled
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/update-motd.d/98-updates
+    - /etc/apt/apt.conf.d/99motd-updates
+    - /etc/cron.d/updates-motd
+    - "{{ motd_updates_cache_script }}"
+    - "{{ motd_updates_cache_file }}"
+  when: not (motd_updates_enabled | bool)
 
 - name: Empty static /etc/motd
   ansible.builtin.copy:
