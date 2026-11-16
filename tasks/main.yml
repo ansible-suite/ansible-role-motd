@@ -1,0 +1,123 @@
+---
+- name: Install needrestart
+  ansible.builtin.apt:
+    name: needrestart
+    state: present
+
+- name: Install iucode-tool (microcode check, Intel bare metal only)
+  ansible.builtin.apt:
+    name: iucode-tool
+    state: present
+  when:
+    - ansible_facts['processor'] | select('search', 'GenuineIntel') | list | length > 0
+    - ansible_facts['virtualization_role'] | default('host') != 'guest'
+
+- name: Install figlet
+  ansible.builtin.apt:
+    name: figlet
+    state: present
+  when: motd_banner_enabled | bool
+
+- name: Deploy MOTD banner
+  ansible.builtin.copy:
+    dest: /etc/update-motd.d/05-banner
+    owner: root
+    group: root
+    mode: "0755"
+    content: |
+      #!/bin/sh
+      # Managed by Ansible - motd-needrestart
+      figlet -f small "$(hostname -s)"
+  when: motd_banner_enabled | bool
+
+- name: Remove MOTD banner when disabled
+  ansible.builtin.file:
+    path: /etc/update-motd.d/05-banner
+    state: absent
+  when: not (motd_banner_enabled | bool)
+
+- name: Install distro-info-data
+  ansible.builtin.apt:
+    name: distro-info-data
+    state: present
+  when: motd_eol_enabled | bool
+
+- name: Deploy MOTD EOL info
+  ansible.builtin.copy:
+    dest: /etc/update-motd.d/10-eol
+    owner: root
+    group: root
+    mode: "0755"
+    content: |
+      #!/bin/sh
+      # Managed by Ansible - motd-needrestart
+      . /etc/os-release
+      awk -F, -v s="$VERSION_CODENAME" '$3==s {
+        printf "Debian %s (%s)\n  EOL:      %s\n", $1, $2, $6
+        printf "  LTS EOL:  %s\n  ELTS EOL: %s\n", $7, $8
+      }' /usr/share/distro-info/debian.csv
+  when: motd_eol_enabled | bool
+
+- name: Remove MOTD EOL info when disabled
+  ansible.builtin.file:
+    path: /etc/update-motd.d/10-eol
+    state: absent
+  when: not (motd_eol_enabled | bool)
+
+- name: Deploy needrestart cache script
+  ansible.builtin.copy:
+    dest: "{{ motd_needrestart_cache_script }}"
+    owner: root
+    group: root
+    mode: "0755"
+    content: |
+      #!/bin/sh
+      # Managed by Ansible - motd-needrestart
+      export LC_ALL=C.UTF-8
+      tmp="{{ motd_needrestart_cache_file }}.tmp"
+      # grep -v returns 1 on empty output (nothing to restart) - that is fine
+      /usr/sbin/needrestart -r l 2>/dev/null | grep -v '^Scanning' > "$tmp"
+      mv "$tmp" "{{ motd_needrestart_cache_file }}"
+  notify: Refresh needrestart cache
+
+- name: Deploy MOTD script
+  ansible.builtin.copy:
+    dest: /etc/update-motd.d/99-needrestart
+    owner: root
+    group: root
+    mode: "0755"
+    content: |
+      #!/bin/sh
+      # Managed by Ansible - motd-needrestart
+      cache="{{ motd_needrestart_cache_file }}"
+      [ -s "$cache" ] && cat "$cache"
+      exit 0
+
+- name: Schedule periodic cache refresh
+  ansible.builtin.cron:
+    name: needrestart motd cache
+    cron_file: needrestart-motd
+    user: root
+    minute: "{{ motd_needrestart_cron_minute }}"
+    job: "{{ motd_needrestart_cache_script }}"
+
+- name: Schedule cache refresh at boot
+  ansible.builtin.cron:
+    name: needrestart motd cache at boot
+    cron_file: needrestart-motd
+    user: root
+    special_time: reboot
+    job: "{{ motd_needrestart_cache_script }}"
+
+- name: Create cache if missing
+  ansible.builtin.command: "{{ motd_needrestart_cache_script }}"
+  args:
+    creates: "{{ motd_needrestart_cache_file }}"
+
+- name: Empty static /etc/motd
+  ansible.builtin.copy:
+    dest: /etc/motd
+    content: ""
+    owner: root
+    group: root
+    mode: "0644"

@@ -1,0 +1,4 @@
+---
+- name: Refresh needrestart cache
+  ansible.builtin.command: "{{ motd_needrestart_cache_script }}"
+  changed_when: true

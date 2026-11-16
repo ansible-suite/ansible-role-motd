@@ -1,0 +1,11 @@
+---
+# Cache with the output of needrestart shown in the login MOTD
+motd_needrestart_cache_file: /var/cache/needrestart.motd
+motd_needrestart_cache_script: /usr/local/sbin/needrestart-cache
+motd_needrestart_cron_minute: "*/30"
+
+# Figlet banner with hostname at the top of the MOTD
+motd_banner_enabled: true
+
+# End of support (EOL/LTS/ELTS) information for the installed Debian release
+motd_eol_enabled: true

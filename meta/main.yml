@@ -1,0 +1,19 @@
+---
+galaxy_info:
+  role_name: motd
+  namespace: ansible_suite
+  author: Jaroslav Korner
+  description: Login MOTD with needrestart status, hostname banner and Debian EOL info
+  license: MIT
+  min_ansible_version: "2.12"
+  platforms:
+    - name: Debian
+      versions:
+        - bookworm
+        - trixie
+  galaxy_tags:
+    - motd
+    - needrestart
+    - debian
+
+dependencies: []
