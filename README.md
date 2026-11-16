@@ -45,4 +45,7 @@ Debian (bookworm, trixie) a odvozené distribuce z rodiny `Debian`. Role použí
     - ansible-suite.motd
 ```
 
-Kontrola bez změn: `ansible-playbook playbooks/motd.yml --limit lobsang --check --diff`.
+Kontrola bez změn: 
+```bash
+ansible-playbook playbooks/motd.yml --limit <hostname> --check --diff
+```
