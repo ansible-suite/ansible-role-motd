@@ -19,15 +19,12 @@
   when: motd_banner_enabled | bool
 
 - name: Deploy MOTD banner
-  ansible.builtin.copy:
+  ansible.builtin.template:
+    src: 05-banner.j2
     dest: /etc/update-motd.d/05-banner
     owner: root
     group: root
     mode: "0755"
-    content: |
-      #!/bin/sh
-      # Managed by Ansible - motd-needrestart
-      figlet -f small "$(hostname -s)"
   when: motd_banner_enabled | bool
 
 - name: Remove MOTD banner when disabled
@@ -43,19 +40,12 @@
   when: motd_eol_enabled | bool
 
 - name: Deploy MOTD EOL info
-  ansible.builtin.copy:
+  ansible.builtin.template:
+    src: 10-eol.j2
     dest: /etc/update-motd.d/10-eol
     owner: root
     group: root
     mode: "0755"
-    content: |
-      #!/bin/sh
-      # Managed by Ansible - motd-needrestart
-      . /etc/os-release
-      awk -F, -v s="$VERSION_CODENAME" '$3==s {
-        printf "Debian %s (%s)\n  EOL:      %s\n", $1, $2, $6
-        printf "  LTS EOL:  %s\n  ELTS EOL: %s\n", $7, $8
-      }' /usr/share/distro-info/debian.csv
   when: motd_eol_enabled | bool
 
 - name: Remove MOTD EOL info when disabled
@@ -65,33 +55,21 @@
   when: not (motd_eol_enabled | bool)
 
 - name: Deploy needrestart cache script
-  ansible.builtin.copy:
+  ansible.builtin.template:
+    src: needrestart-cache.sh.j2
     dest: "{{ motd_needrestart_cache_script }}"
     owner: root
     group: root
     mode: "0755"
-    content: |
-      #!/bin/sh
-      # Managed by Ansible - motd-needrestart
-      export LC_ALL=C.UTF-8
-      tmp="{{ motd_needrestart_cache_file }}.tmp"
-      # grep -v returns 1 on empty output (nothing to restart) - that is fine
-      /usr/sbin/needrestart -r l 2>/dev/null | grep -v '^Scanning' > "$tmp"
-      mv "$tmp" "{{ motd_needrestart_cache_file }}"
   notify: Refresh needrestart cache
 
-- name: Deploy MOTD script
-  ansible.builtin.copy:
+- name: Deploy MOTD needrestart script
+  ansible.builtin.template:
+    src: 99-needrestart.j2
     dest: /etc/update-motd.d/99-needrestart
     owner: root
     group: root
     mode: "0755"
-    content: |
-      #!/bin/sh
-      # Managed by Ansible - motd-needrestart
-      cache="{{ motd_needrestart_cache_file }}"
-      [ -s "$cache" ] && cat "$cache"
-      exit 0
 
 - name: Schedule periodic cache refresh
   ansible.builtin.cron:

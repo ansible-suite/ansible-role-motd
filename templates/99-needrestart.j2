@@ -1,0 +1,5 @@
+#!/bin/sh
+# Managed by Ansible - motd-needrestart
+cache="{{ motd_needrestart_cache_file }}"
+[ -s "$cache" ] && cat "$cache"
+exit 0

@@ -1,0 +1,3 @@
+#!/bin/sh
+# Managed by Ansible - motd-needrestart
+figlet -f {{ motd_banner_font | quote }} "$(hostname -s)"

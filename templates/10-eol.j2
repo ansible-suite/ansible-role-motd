@@ -1,0 +1,7 @@
+#!/bin/sh
+# Managed by Ansible - motd-needrestart
+. /etc/os-release
+awk -F, -v s="$VERSION_CODENAME" '$3==s {
+  printf "Debian %s (%s)\n  EOL:      %s\n", $1, $2, $6
+  printf "  LTS EOL:  %s\n  ELTS EOL: %s\n", $7, $8
+}' /usr/share/distro-info/debian.csv

@@ -22,6 +22,7 @@ Debian (bookworm, trixie). Role používá `apt` a `update-motd.d`.
 | `motd_needrestart_cache_script` | `/usr/local/sbin/needrestart-cache` | Skript obnovující cache |
 | `motd_needrestart_cron_minute` | `"*/30"` | Minuta cronu obnovy cache |
 | `motd_banner_enabled` | `true` | Figlet banner s hostname |
+| `motd_banner_font` | `small` | Font figletu pro banner (`figlet -f`) |
 | `motd_eol_enabled` | `true` | Informace o EOL nainstalované verze Debianu |
 
 ## Použití

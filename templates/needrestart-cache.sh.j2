@@ -1,0 +1,7 @@
+#!/bin/sh
+# Managed by Ansible - motd-needrestart
+export LC_ALL=C.UTF-8
+tmp="{{ motd_needrestart_cache_file }}.tmp"
+# grep -v returns 1 on empty output (nothing to restart) - that is fine
+/usr/sbin/needrestart -r l 2>/dev/null | grep -v '^Scanning' > "$tmp"
+mv "$tmp" "{{ motd_needrestart_cache_file }}"
