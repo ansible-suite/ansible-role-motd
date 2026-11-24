@@ -1,22 +1,92 @@
 ---
-# Cache with the output of needrestart shown in the login MOTD
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Syntax [[[
+# .. This file is used by a script (bin/yaml2md.sh) to generate the README.md file.
+# .. Any line starting with "# .." will be ignored by the script.
+# .. Some other patterns will also be ignored ("---", "# \]\]\]",…).
+# .. If you don't know how to manage it, simply duplicate an existing variable block.
+# .. ]]]
+
+## Default variables
+
+### Needrestart [[[
+
+#### motd_needrestart_cache_file [[[
+# **String**. File with the cached output of needrestart shown in the login MOTD.
+# Default value:
 motd_needrestart_cache_file: /var/cache/needrestart.motd
+# ]]]
+
+#### motd_needrestart_cache_script [[[
+# **String**. Script that refreshes the needrestart cache.
+# Default value:
 motd_needrestart_cache_script: /usr/local/sbin/needrestart-cache
+# ]]]
+
+#### motd_needrestart_cron_minute [[[
+# **String**. Cron minute field for the needrestart cache refresh.
+# Default value:
 motd_needrestart_cron_minute: "*/30"
+# ]]]
+### ]]]
 
-# Figlet banner with hostname at the top of the MOTD
+### Banner [[[
+
+#### motd_banner_enabled [[[
+# **Boolean**. Figlet banner with the hostname at the top of the MOTD.
+# Default value:
 motd_banner_enabled: true
+# ]]]
 
-# Figlet font used for the banner (e.g. small, standard, slant, big)
+#### motd_banner_font [[[
+# **String**. Figlet font used for the banner (`figlet -f`), e.g. small, standard,
+# slant, big.
+# Default value:
 motd_banner_font: small
+# ]]]
+### ]]]
 
-# End of support (EOL/LTS/ELTS) information for the installed Debian release
+### End of support (EOL) [[[
+
+#### motd_eol_enabled [[[
+# **Boolean**. Show end of support information (EOL/LTS/ELTS) for the installed
+# Debian release.
+# Default value:
 motd_eol_enabled: true
+# ]]]
+### ]]]
 
-# Pending package updates in the MOTD (counted from the existing apt cache)
+### Pending updates [[[
+
+#### motd_updates_enabled [[[
+# **Boolean**. Show the number of pending package updates in the MOTD (counted from
+# the existing apt cache, the role never runs `apt update` itself).
+# Default value:
 motd_updates_enabled: true
+# ]]]
+
+#### motd_updates_cache_file [[[
+# **String**. File with the cached updates summary shown in the MOTD.
+# Default value:
 motd_updates_cache_file: /var/cache/updates.motd
+# ]]]
+
+#### motd_updates_cache_script [[[
+# **String**. Script that refreshes the updates cache.
+# Default value:
 motd_updates_cache_script: /usr/local/sbin/updates-cache
+# ]]]
+
+#### motd_updates_cron_minute [[[
+# **String**. Cron minute field for the updates cache refresh.
+# Default value:
 motd_updates_cron_minute: "*/30"
-# How many package names to list below the summary (0 = summary only)
+# ]]]
+
+#### motd_updates_list_max [[[
+# **Integer**. How many package names to list below the summary (0 = summary only).
+# Default value:
 motd_updates_list_max: 0
+# ]]]
+### ]]]

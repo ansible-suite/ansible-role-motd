@@ -1,0 +1,20 @@
+---
+
+# Ignore these paths during auto-detection
+exclude_paths:
+  - .venv/
+  - data/
+  - 'molecule/'
+  - '.tmp/'
+
+skip_list:
+  - command-instead-of-module
+  - no-changed-when
+  - role-name
+  - name[missing]
+  - yaml[line-length]
+
+warn_list:
+  - risky-file-permissions
+  - no-changed-when
+  - yaml
